@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:video_player/video_player.dart';
 import 'package:video_slider/thumbnail_slider.dart';
 import 'package:video_slider/trim_slider_painter.dart';
 import 'package:video_slider/video_editor_controller.dart';
-import 'package:video_player/video_player.dart';
 
 enum _TrimBoundaries { left, right, inside, progress, none }
 
@@ -44,7 +44,9 @@ class _VideoSliderState extends State<VideoSlider> {
   void initState() {
     _controller = widget.controller.video;
     final duration = _controller.value.duration;
-    _maxDuration = widget.maxDuration == null || _maxDuration! > duration ? duration : widget.maxDuration;
+    _maxDuration = widget.maxDuration == null || _maxDuration! > duration
+        ? duration
+        : widget.maxDuration;
     super.initState();
   }
 
@@ -83,7 +85,6 @@ class _VideoSliderState extends State<VideoSlider> {
       case _TrimBoundaries.left:
         final pos = _rect.topLeft + delta;
         final diff = _getDurationDiff(pos.dx, _rect.width);
-        // 選択範囲が限界まで広がっている時に引っ張ると範囲全体が引っ張られるようにする
         if (diff == _maxDuration) {
           final pos = _rect.topLeft + delta;
           _changeTrimRect(left: pos.dx);
@@ -153,7 +154,9 @@ class _VideoSliderState extends State<VideoSlider> {
       _rect = Rect.fromLTWH(
         0.0,
         0.0,
-        (_maxDuration!.inMilliseconds / _controller.value.duration.inMilliseconds) * _layout.width,
+        (_maxDuration!.inMilliseconds /
+                _controller.value.duration.inMilliseconds) *
+            _layout.width,
         widget.height,
       );
     } else {
@@ -177,7 +180,8 @@ class _VideoSliderState extends State<VideoSlider> {
   }
 
   void _updateControllerIsTrimming(bool value) {
-    if (_boundary.value != _TrimBoundaries.none && _boundary.value != _TrimBoundaries.progress) {
+    if (_boundary.value != _TrimBoundaries.none &&
+        _boundary.value != _TrimBoundaries.progress) {
       widget.controller.isTrimming = value;
     }
   }
@@ -195,39 +199,58 @@ class _VideoSliderState extends State<VideoSlider> {
 
   @override
   Widget build(BuildContext context) {
-    return LayoutBuilder(builder: (_, contrainst) {
-      final layout = Size(contrainst.maxWidth, contrainst.maxHeight);
-      if (_layout != layout) {
-        _layout = layout;
-        _createTrimRect();
-      }
+    return LayoutBuilder(
+      builder: (_, contrainst) {
+        final layout = Size(contrainst.maxWidth, contrainst.maxHeight);
+        if (_layout != layout) {
+          _layout = layout;
+          _createTrimRect();
+        }
 
-      return GestureDetector(
-        onHorizontalDragUpdate: _onHorizontalDragUpdate,
-        onHorizontalDragStart: _onHorizontalDragStart,
-        onHorizontalDragEnd: _onHorizontalDragEnd,
-        behavior: HitTestBehavior.opaque,
-        child: Stack(children: [
-          ThumbnailSlider(
-            controller: widget.controller,
-            height: widget.height,
-            quality: widget.quality,
-          ),
-          AnimatedBuilder(
-            animation: Listenable.merge([widget.controller, _controller]),
-            builder: (_, __) {
-              return CustomPaint(
-                size: Size.infinite,
-                painter: TrimSliderPainter(
-                  _rect,
-                  _getTrimPosition(),
-                  style: widget.controller.trimStyle,
-                ),
-              );
-            },
-          ),
-        ]),
-      );
-    });
+        // Container(
+        //   height: 100,
+        //   width: 100,
+        //   decoration: const BoxDecoration(
+        //     color: Colors.yellow,
+        //     borderRadius: BorderRadius.horizontal(
+        //       left: Radius.circular(12),
+        //     ),
+        //   ),
+        //   child: IconButton(
+        //     icon: Icon(widget.isPlaying ? Icons.play_arrow : Icons.pause),
+        //     onPressed: () {
+        //       widget.isPlaying
+        //           ? widget.controller.video.pause()
+        //           : widget.controller.video.play();
+        //       setState(() {
+        //         widget.isPlaying = !widget.isPlaying;
+        //       });
+        //     },
+        //   ),
+        // );
+        return Stack(
+          children: [
+            ThumbnailSlider(
+              controller: widget.controller,
+              height: widget.height,
+              quality: widget.quality,
+            ),
+            AnimatedBuilder(
+              animation: Listenable.merge([widget.controller, _controller]),
+              builder: (_, __) {
+                return CustomPaint(
+                  size: Size.infinite,
+                  painter: TrimSliderPainter(
+                    _rect,
+                    _getTrimPosition(),
+                    style: widget.controller.trimStyle,
+                  ),
+                );
+              },
+            ),
+          ],
+        );
+      },
+    );
   }
 }

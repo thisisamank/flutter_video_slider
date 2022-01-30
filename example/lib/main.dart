@@ -12,7 +12,7 @@ void main() {
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return const MaterialApp(
       title: 'VideoSlider Demo',
       home: PickerPage(),
     );
@@ -33,10 +33,12 @@ class _PickerPageState extends State<PickerPage> {
       body: Center(
         child: ElevatedButton(
           onPressed: () async {
-            final assets = await FilePicker.platform.pickFiles(type: FileType.video);
+            final assets =
+                await FilePicker.platform.pickFiles(type: FileType.video);
             if (assets != null) {
-              final controller = VideoEditorController.file(File(assets.files.single.path!));
-              Navigator.push(
+              final controller =
+                  VideoEditorController.file(File(assets.files.single.path!));
+              await Navigator.push(
                 context,
                 MaterialPageRoute<bool>(
                   builder: (_) => AppPage(controller),
@@ -44,7 +46,7 @@ class _PickerPageState extends State<PickerPage> {
               );
             }
           },
-          child: Text("Pick Video From Gallery"),
+          child: const Text('Pick Video From Gallery'),
         ),
       ),
     );
@@ -52,9 +54,10 @@ class _PickerPageState extends State<PickerPage> {
 }
 
 class AppPage extends StatefulWidget {
-  const AppPage(this.controller, {Key? key}) : super(key: key);
+  AppPage(this.controller, {Key? key}) : super(key: key);
 
   final VideoEditorController controller;
+  bool isPlaying = true;
 
   @override
   _AppPageState createState() => _AppPageState();
@@ -71,7 +74,7 @@ class _AppPageState extends State<AppPage> {
 
   Future<void> _init() async {
     await widget.controller.initialize();
-    widget.controller.video.play();
+    await widget.controller.video.play();
     setState(() {});
   }
 
@@ -88,7 +91,7 @@ class _AppPageState extends State<AppPage> {
         body: Container(
           width: MediaQuery.of(context).size.width,
           height: MediaQuery.of(context).size.height,
-          color: Colors.black,
+          color: Colors.white,
           child: Stack(
             children: [
               Align(
@@ -105,9 +108,11 @@ class _AppPageState extends State<AppPage> {
               Align(
                 alignment: Alignment.center,
                 child: ElevatedButton(
-                  child: Text('Print start position time and end position time.'),
+                  child: const Text(
+                      'Print start position time and end position time.'),
                   onPressed: () {
-                    final duration = widget.controller.video.value.duration.inSeconds;
+                    final duration =
+                        widget.controller.video.value.duration.inSeconds;
                     final start = widget.controller.minTrim * duration;
                     final end = widget.controller.maxTrim * duration;
                     setState(() {
@@ -123,20 +128,48 @@ class _AppPageState extends State<AppPage> {
                     children: [
                       Text(
                         _positionText,
-                        style: TextStyle(
+                        style: const TextStyle(
                           color: Colors.red,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-                      Container(
-                        width: MediaQuery.of(context).size.width - 40,
-                        height: 60,
-                        margin: const EdgeInsets.symmetric(horizontal: 20),
-                        child: VideoSlider(
-                          controller: widget.controller,
-                          height: 60,
-                          maxDuration: const Duration(seconds: 15),
-                        ),
+                      Row(
+                        children: [
+                          Container(
+                            height: 60,
+                            width: 60,
+                            decoration: const BoxDecoration(
+                              color: Colors.yellow,
+                              borderRadius: BorderRadius.horizontal(
+                                left: Radius.circular(12),
+                              ),
+                            ),
+                            child: IconButton(
+                              icon: Icon(
+                                widget.isPlaying
+                                    ? Icons.pause
+                                    : Icons.play_arrow,
+                              ),
+                              onPressed: () {
+                                widget.isPlaying
+                                    ? widget.controller.video.pause()
+                                    : widget.controller.video.play();
+                                setState(() {
+                                  widget.isPlaying = !widget.isPlaying;
+                                });
+                              },
+                            ),
+                          ),
+                          Container(
+                            width: MediaQuery.of(context).size.width - 40,
+                            height: 60,
+                            child: VideoSlider(
+                              controller: widget.controller,
+                              height: 60,
+                              maxDuration: const Duration(seconds: 15),
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),

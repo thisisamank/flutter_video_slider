@@ -15,13 +15,10 @@ class TrimSliderPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final width = style.lineWidth;
-    final radius = style.dotRadius;
     final halfWidth = width / 2;
-    final halfHeight = rect.height / 2;
-    final dotPaint = Paint()..color = style.dotColor;
-    final linePaint = Paint()..color = style.lineColor;
-    final progressPaint = Paint()..color = style.positionLineColor;
-    final background = Paint()..color = Colors.black.withOpacity(0.6);
+    final linePaint = Paint()..strokeWidth = 4.0;
+    final progressPaint = Paint()..strokeWidth = 2.0;
+    final background = Paint()..color = Colors.grey.withOpacity(0.6);
 
     canvas.drawRect(
       Rect.fromPoints(
@@ -85,18 +82,29 @@ class TrimSliderPainter extends CustomPainter {
       linePaint,
     );
 
-    //LECT CIRCLE
-    canvas.drawCircle(
-      Offset(rect.left + halfWidth, halfHeight),
-      radius,
-      dotPaint,
+    canvas.drawRRect(
+      RRect.fromLTRBAndCorners(
+        rect.left,
+        rect.top,
+        rect.left + 20,
+        rect.bottom,
+        topLeft: const Radius.circular(8),
+        bottomLeft: const Radius.circular(8),
+      ),
+      Paint()..color = Colors.yellow,
     );
 
     //RIGHT CIRCLE
-    canvas.drawCircle(
-      Offset(rect.right - halfWidth, halfHeight),
-      radius,
-      dotPaint,
+    canvas.drawRRect(
+      RRect.fromLTRBAndCorners(
+        rect.right,
+        rect.top,
+        rect.right + 20,
+        rect.bottom,
+        topRight: const Radius.circular(8),
+        bottomRight: const Radius.circular(8),
+      ),
+      Paint()..color = Colors.yellow,
     );
   }
 
